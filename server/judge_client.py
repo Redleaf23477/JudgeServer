@@ -59,8 +59,14 @@ class JudgeClient(object):
         return self._test_case_info["test_cases"][test_case_file_id]
 
     def _compare_output(self, test_case_file_id, user_output_file):
-        with open(user_output_file, "rb") as f:
-            content = f.read()
+        '''
+        - strip trailing space for each line and then join with '\n'
+        - note that oj-backend should strip the testcases in the same way
+          so that the resulting hash will be identical
+        '''
+        with open(user_output_file, "r") as f:
+            stripped_content = [line.rstrip() for line in f.readlines()]
+            content = '\n'.join(stripped_content).encode()
         output_md5 = hashlib.md5(content.rstrip()).hexdigest()
         result = output_md5 == self._get_test_case_file_info(test_case_file_id)["stripped_output_md5"]
         return output_md5, result
