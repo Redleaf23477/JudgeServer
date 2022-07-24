@@ -60,13 +60,12 @@ class JudgeClient(object):
 
     def _compare_output(self, test_case_file_id, user_output_file):
         '''
-        - strip trailing space for each line and then join with '\n'
+        - strip trailing space for each line and then join with b'\n'
         - note that oj-backend should strip the testcases in the same way
           so that the resulting hash will be identical
         '''
-        with open(user_output_file, "r") as f:
-            stripped_content = [line.rstrip() for line in f.readlines()]
-            content = '\n'.join(stripped_content).encode()
+        with open(user_output_file, "rb") as f:
+            content = b'\n'.join([line.rstrip() for line in f.read().split(b'\n')])
         output_md5 = hashlib.md5(content.rstrip()).hexdigest()
         result = output_md5 == self._get_test_case_file_info(test_case_file_id)["stripped_output_md5"]
         return output_md5, result
