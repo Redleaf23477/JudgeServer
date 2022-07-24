@@ -70,13 +70,14 @@ class JudgeClient(object):
         result = output_md5 == self._get_test_case_file_info(test_case_file_id)["stripped_output_md5"]
         return output_md5, result
 
-    def _spj(self, in_file_path, user_out_file_path):
+    def _spj(self, in_file_path, user_out_file_path, jury_ans_file_path):
         os.chown(self._submission_dir, SPJ_USER_UID, 0)
         os.chown(user_out_file_path, SPJ_USER_UID, 0)
         os.chmod(user_out_file_path, 0o740)
         command = self._spj_config["command"].format(exe_path=self._spj_exe,
                                                      in_file_path=in_file_path,
-                                                     user_out_file_path=user_out_file_path)
+                                                     user_out_file_path=user_out_file_path,
+                                                     jury_ans_file_path=jury_ans_file_path)
         command = shlex.split(command)
         seccomp_rule_name = self._spj_config["seccomp_rule"]
         result = _judger.run(max_cpu_time=self._max_cpu_time * 3,
@@ -106,6 +107,7 @@ class JudgeClient(object):
     def _judge_one(self, test_case_file_id):
         test_case_info = self._get_test_case_file_info(test_case_file_id)
         in_file = os.path.join(self._test_case_dir, test_case_info["input_name"])
+        ans_file = os.path.join(self._test_case_dir, test_case_info["output_name"]) if "output_name" in test_case_info else "/third/emptyfile"
 
         if self._io_mode["io_mode"] == ProblemIOMode.file:
             user_output_dir = os.path.join(self._submission_dir, str(test_case_file_id))
@@ -155,11 +157,11 @@ class JudgeClient(object):
             if not os.path.exists(user_output_file):
                 run_result["result"] = _judger.RESULT_WRONG_ANSWER
             else:
-                if self._test_case_info.get("spj"):
+                if self._test_case_info.get("spj"):  # note: sample test for spj does not have spj flag
                     if not self._spj_config or not self._spj_version:
                         raise JudgeClientError("spj_config or spj_version not set")
 
-                    spj_result = self._spj(in_file_path=in_file, user_out_file_path=user_output_file)
+                    spj_result = self._spj(in_file_path=in_file, user_out_file_path=user_output_file, jury_ans_file_path=ans_file)
 
                     if spj_result == SPJ_WA:
                         run_result["result"] = _judger.RESULT_WRONG_ANSWER
