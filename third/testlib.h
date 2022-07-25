@@ -446,6 +446,9 @@ inline double doubleDelta(double expected, double result) {
 }
 
 static void __testlib_set_binary(std::FILE *file) {
+    // Note: _judger sandbox forbids freopen on stdin/out/err
+    // checker do not need this feature
+    /*
     if (NULL != file) {
 #ifdef O_BINARY
 #   ifdef _MSC_VER
@@ -460,6 +463,7 @@ static void __testlib_set_binary(std::FILE *file) {
         freopen(NULL, "wb", file);
 #endif
     }
+    */
 }
 
 #if __cplusplus > 199711L || defined(_MSC_VER)
@@ -2493,6 +2497,8 @@ void InStream::textColor(
 #endif
         WORD color
 ) {
+// Note: _judger sandbox forbid color related control char output
+/*
 #if defined(ON_WINDOWS) && (!defined(_MSC_VER) || _MSC_VER > 1400)
     HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(handle, color);
@@ -2520,6 +2526,7 @@ void InStream::textColor(
         }
     }
 #endif
+*/
 }
 
 NORETURN void halt(int exitCode) {

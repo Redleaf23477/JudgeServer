@@ -16,6 +16,14 @@ SPJ_WA = 1
 SPJ_AC = 0
 SPJ_ERROR = -1
 
+TESTLIB_OK = 0
+TESTLIB_WA = 1
+TESTLIB_PE = 2
+TESTLIB_FAIL = 3
+TESTLIB_DIRT = 4
+TESTLIB_POINTS = 5
+TESTLIB_UNEXPECTED_EOF = 8
+TESTLIB_PARTIALY = 16
 
 def _run(instance, test_case_file_id):
     return instance._judge_one(test_case_file_id)
@@ -96,6 +104,10 @@ class JudgeClient(object):
                              seccomp_rule_name=seccomp_rule_name,
                              uid=SPJ_USER_UID,
                              gid=SPJ_GROUP_GID)
+
+        # Mapping from testlib exit codes to qdoj exit codes
+        if result["exit_code"] in [TESTLIB_PE, TESTLIB_FAIL, TESTLIB_DIRT, TESTLIB_POINTS, TESTLIB_UNEXPECTED_EOF, TESTLIB_PARTIALY]:
+            result["exit_code"] = SPJ_WA
 
         if result["result"] == _judger.RESULT_SUCCESS or \
                 (result["result"] == _judger.RESULT_RUNTIME_ERROR and
